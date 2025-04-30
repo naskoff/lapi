@@ -1,23 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
+    use WithoutModelEvents;
+
     public function run(): void
     {
-        // User::factory(10)->create();
+        $users = [];
+        for($i=0; $i<250_000; $i++){
+            $users[] = [
+                'name' => fake()->name(),
+                'email' => fake()->unique()->safeEmail(),
+                'email_verified_at' => now(),
+                'password' => fake()->password(),
+            ];
+        }
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        DB::disableQueryLog();
+
+        foreach (array_chunk($users, 10_000) as $chunk) {
+            echo "Run chunk users ..." . PHP_EOL;
+            DB::table('users')->insert($chunk);
+        }
     }
 }
